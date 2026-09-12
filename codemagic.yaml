@@ -1,0 +1,27 @@
+workflows:
+  ios-build:
+    name: Build Unsigned IPA
+    max_build_duration: 30
+    instance_type: mac_mini_m1
+    environment:
+      xcode: latest
+      sdk: iphoneos
+    scripts:
+      - name: Build Xcode Workspace
+        script: |
+          xcodebuild build \
+            -workspace RingsCards.xcworkspace \
+            -scheme RingsCards \
+            -sdk iphoneos \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            BUILD_DIR=$CM_BUILD_DIR/build
+      - name: Package into IPA
+        script: |
+          cd $CM_BUILD_DIR/build/Release-iphoneos
+          mkdir -p Payload
+          mv RingsCards.app Payload/
+          zip -r RingsCards.ipa Payload
+    artifacts:
+      - $CM_BUILD_DIR/build/Release-iphoneos/RingsCards.ipa
