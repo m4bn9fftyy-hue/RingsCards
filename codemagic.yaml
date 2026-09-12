@@ -5,7 +5,6 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       xcode: latest
-      sdk: iphoneos
     scripts:
       - name: Build Xcode Workspace
         script: |
