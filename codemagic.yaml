@@ -5,25 +5,27 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       xcode: latest
-      cocoapods: default
     scripts:
-      - name: Install CocoaPods Dependencies
-        script: |
-          if [ -f "Podfile" ]; then
-            pod install
-          fi
       - name: Build and Package IPA
         script: |
           set -e
+          
+          # 1. Resolve Swift Package Manager dependencies
+          xcodebuild -resolvePackageDependencies -project "RingsCards.xcodeproj" -scheme "RingsCards"
+          
+          # 2. Build the app binary without signing requirement
           xcodebuild build \
-            -workspace "RingsCards.xcworkspace" \
+            -project "RingsCards.xcodeproj" \
             -scheme "RingsCards" \
             -sdk iphoneos \
             -configuration Release \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_SETTINGS=Manual \
             BUILD_DIR="$CM_BUILD_DIR/build"
 
+          # 3. Create standard IPA payload directory structure
           cd "$CM_BUILD_DIR/build/Release-iphoneos"
           mkdir -p Payload
           cp -r "RingsCards.app" Payload/
